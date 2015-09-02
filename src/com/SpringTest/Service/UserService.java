@@ -5,7 +5,7 @@ import com.SpringTest.daoImpl.UserDaoImpl;
 import com.SpringTest.model.User;
 
 public class UserService {
-	private UserDao userDao = new UserDaoImpl();
+	private UserDao userDao ;// initial by Spring
 	
 	public UserDao getUserDao() {
 		return userDao;
@@ -15,7 +15,7 @@ public class UserService {
 		this.userDao = userDao;
 	}
 
-	public void controllerCalltoAddaUser(User aUser){
-		this.userDao.addUser(aUser);
+	public boolean controllerCalltoAddaUser(User aUser){
+		return this.userDao.addUser(aUser);
 	}
 }

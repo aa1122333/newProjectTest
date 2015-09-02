@@ -3,7 +3,7 @@ package com.SpringTest.daoImpl;
 import com.SpringTest.dao.UserDao;
 import com.SpringTest.model.User;
 
-public class UserDaoOracleImpl implements UserDao {
+public class UserDaoImplOracle implements UserDao {
 
 	@Override
 	public boolean addUser(User user) {
@@ -27,10 +27,10 @@ public class UserDaoOracleImpl implements UserDao {
 	}
 
 	@Override
-	public boolean searchUser(User user) {
+	public User searchUser(int id) {
 		// TODO Auto-generated method stub
 		System.out.println("searchOracleUser");
-		return false;
+		return null;
 	}
 
 }

@@ -1,13 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop" 
+       xmlns:tx="http://www.springframework.org/schema/tx" 
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+           http://www.springframework.org/schema/tx 
+           http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+
+	<bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor" />
 
   <bean name="u" class="com.SpringTest.daoImpl.UserDaoImpl">
+  		<property name="sessionFactory" ref="sessionFactory"></property>
   </bean>
   
-  <bean id="userService" class="com.SpringTest.Service.UserService"> 
+  <bean id="userService1" class="com.SpringTest.Service.UserService"> 
   	<property name="userDao" ref="u" />
   </bean>
+  
+
+  <bean id="LoginTest" class="com.SpringTest.controller.LoginController">
+  	<property name="userService" ref="userService1"/>
+  </bean>
+  
+  <!-- <bean id="sessionFactory"  class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+  	<property name="configLocation"
+   		value="classpath:hibernate.cfg.xml">
+  	</property>
+   </bean> -->
+            <!--  以下为hibernate配置 -->
+            
+         <!--    1,配置文件路径 -->
+ 	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<value>classpath:jdbc.properties</value>
+		</property>
+	</bean>
+	
+	
+	<!-- 2,数据库配置 -->
+	<bean id="datasource" destroy-method="close"
+		class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName"
+			value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+	
+	
+	<!-- 3,配置sessionFactory -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">  
+        <property name="dataSource" ref="datasource" />  
+        <!-- 注意：此处用的是Annotation的方式配置的Hibernate，这里的property的name是annotatedClasses -->  
+        <property name="annotatedClasses">  
+            <list>  
+                <value>com.SpringTest.model.User</value>  
+            </list>  
+        </property>  
+        <property name="hibernateProperties">  
+            <props>  
+                <!-- 设置Hibernate方言 -->  
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>  
+                <!-- 是否打印sql -->  
+                <prop key="hibernate.show_sql">true</prop>  
+                <!-- 格式化sql -->  
+                <prop key="hibernate.format_sql">true</prop>  
+                <!-- 是否自动更新表 -->  
+                <prop key="hibernate.hbm2ddl.auto">update</prop>  
+                <prop key="hibernate.current_session_context_class">thread</prop>  
+                <!-- 最大抓取深度，如果为0，则关闭默认的外连接抓取。建议值为0-3 -->  
+                <prop key="hibernate.max_fetch_depth">1</prop>  
+                <!-- 用于生成有助于调试的注释信息，默认为关闭 -->  
+                <prop key="hibernate.use_sql_comments">true</prop>  
+            </props>  
+        </property>  
+    </bean>  
+    
+    
+<!--     <bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean> -->
+
+     
+    
+    
+        <!--  4,配置事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager" >  
+        <property name="sessionFactory" ref="sessionFactory"></property>  
+    </bean>
+    
+    <!-- 5,配置AOP切面 -->
+    
+    <aop:config>
+        <aop:pointcut id="txMethod" expression="execution(* com.SpringTest.daoImpl.*DaoImpl.*(..))" />  
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txMethod"/>  
+    </aop:config> 
+    
+    
+    <!-- 6,AOP切面声明事务管理 -->  
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">  
+        <tx:attributes>  
+            <tx:method name="save*" propagation="REQUIRED" /> <!-- 支持当前事务，如果执行到save开头的任何方法时没有事务则开启一个事务 这是最常见的方式-->  
+            <tx:method name="update*" propagation="REQUIRED" /><!-- 支持当前事务，如果执行到save开头的任何方法时没有事务则开启一个事务 这是最常见的方式-->  
+            <tx:method name="add*" propagation="REQUIRED" /><!-- 支持当前事务，如果执行到save开头的任何方法时没有事务则开启一个事务 这是最常见的方式-->  
+            <tx:method name="delete*" propagation="REQUIRED" /><!-- 支持当前事务，如果执行到save开头的任何方法时没有事务则开启一个事务 这是最常见的方式--> 
+            <tx:method name="edit*" propagation="REQUIRED" /> <!-- 支持当前事务，如果执行到save开头的任何方法时没有事务则开启一个事务 这是最常见的方式-->   
+            <tx:method name="find*" propagation="SUPPORTS" read-only="true"/> <!-- 支持当前事务，如果当前没有事务，就以非事务方式执行。只读 -->  
+            <tx:method name="get*" propagation="SUPPORTS" read-only="true"/><!-- 支持当前事务，如果当前没有事务，就以非事务方式执行。只读 --> 
+            <tx:method name="search*" propagation="SUPPORTS" read-only="true"/> <!-- 支持当前事务，如果当前没有事务，就以非事务方式执行。只读 -->  
+            <tx:method name="*" />  
+        </tx:attributes>  
+    </tx:advice> 
+    
 </beans>

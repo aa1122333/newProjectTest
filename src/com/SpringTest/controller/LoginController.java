@@ -10,6 +10,7 @@ import org.apache.struts2.util.ServletContextAware;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.SpringTest.Service.UserService;
@@ -37,7 +38,7 @@ import com.opensymphony.xwork2.ActionSupport;
 		if(count>0) return true;
 		else return false;
 	}*/
-
+@Scope("prototype")
 public class LoginController extends ActionSupport implements ServletRequestAware, ServletResponseAware, ServletContextAware{
 	
 	private HttpServletRequest request;
@@ -56,6 +57,16 @@ public class LoginController extends ActionSupport implements ServletRequestAwar
         this.servletContext=ser;
     }
 	
+    private UserService userService ;//initial by Spring
+    
+	public UserService getUserService() {
+		return userService;
+	}
+
+	public void setUserService(UserService userService) {
+		this.userService = userService;
+	}
+
 	public String Login() {
 		/*UserService service = new UserService();
 		service.controllerCalltoAddaUser(null);
@@ -71,6 +82,14 @@ public class LoginController extends ActionSupport implements ServletRequestAwar
 		u.setName("zhangsan");
 		u.setPassword("zhangsan");*/
 		/*service.add(u);*/
+		User u = new User();
+		u.setId(1);
+		u.setName("A");
+		u.setPassword("b");
+		boolean solution = userService.controllerCalltoAddaUser(u);
+		if(solution == true)
 		return SUCCESS;
+		else return "fail";
 	}
+	
 }

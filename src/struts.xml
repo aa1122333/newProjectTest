@@ -6,7 +6,7 @@
 <struts>
 	<constant name="struts.devMode" value="true"></constant>
 	<package name="registration" namespace="/" extends="struts-default">
-		<action name="Login" class="com.SpringTest.controller.LoginController" method="Login">
+		<action name="Login" class="LoginTest" method="Login">
 			<result name="success">/registerSuccess.jsp</result>
 			<result name="fail">/registerFail.jsp</result>
 		</action>
